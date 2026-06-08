@@ -237,6 +237,8 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
     # Compile model for PyTorch 2.0+
     if getattr(opt, 'compile', False) and hasattr(torch, 'compile'):
         LOGGER.info('Compiling model with torch.compile() for optimized training...')
+        import torch._dynamo
+        torch._dynamo.config.cache_size_limit = 64
         model = torch.compile(model)
 
     # Start training
