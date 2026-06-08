@@ -197,12 +197,21 @@ def profile(input, ops, n=10, device=None):
 
 def is_parallel(model):
     # Returns True if model is of type DP or DDP
+    if hasattr(model, '_orig_mod'):
+        model = model._orig_mod
     return type(model) in (nn.parallel.DataParallel, nn.parallel.DistributedDataParallel)
 
 
 def de_parallel(model):
-    # De-parallelize a model: returns single-GPU model if model is of type DP or DDP
-    return model.module if is_parallel(model) else model
+    # De-parallelize a model: returns single-GPU, uncompiled model if model is parallelized or compiled
+    while True:
+        if type(model) in (nn.parallel.DataParallel, nn.parallel.DistributedDataParallel):
+            model = model.module
+        elif hasattr(model, '_orig_mod'):
+            model = model._orig_mod
+        else:
+            break
+    return model
 
 
 def initialize_weights(model):
@@ -304,6 +313,8 @@ def scale_img(img, ratio=1.0, same_shape=False, gs=32):  # img(16,3,256,416)
 
 def copy_attr(a, b, include=(), exclude=()):
     # Copy attributes from b to a, options to only include [...] and to exclude [...]
+    while hasattr(b, '_orig_mod'):
+        b = b._orig_mod
     for k, v in b.__dict__.items():
         if (len(include) and k not in include) or k.startswith('_') or k in exclude:
             continue
