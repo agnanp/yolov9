@@ -248,6 +248,10 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
     # Compile model for PyTorch 2.0+
     if getattr(opt, 'compile', False) and hasattr(torch, 'compile'):
         LOGGER.info('Compiling model with torch.compile() for optimized training...')
+        # Disable inplace activations to prevent version mismatch errors in compile autograd
+        for m in model.modules():
+            if hasattr(m, 'inplace'):
+                m.inplace = False
         import torch._dynamo
         torch._dynamo.config.cache_size_limit = 64
         model = torch.compile(model)
