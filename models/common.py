@@ -572,11 +572,11 @@ class SPPELAN(nn.Module):
         self.cv5 = Conv(4*c3, c2, 1, 1)
 
     def forward(self, x):
-        y = [self.cv1(x)]
-        y.append(self.cv2(y[-1]))
-        y.append(self.cv3(y[-1]))
-        y.append(self.cv4(y[-1]))
-        return self.cv5(torch.cat(y, 1))
+        y1 = self.cv1(x)
+        y2 = self.cv2(y1)
+        y3 = self.cv3(y2)
+        y4 = self.cv4(y3)
+        return self.cv5(torch.cat((y1, y2, y3, y4), 1))
         
         
 class ELAN1(nn.Module):
@@ -590,16 +590,16 @@ class ELAN1(nn.Module):
         self.cv4 = Conv(c3+(2*c4), c2, 1, 1)
 
     def forward(self, x):
-        y = list(self.cv1(x).chunk(2, 1))
-        y.append(self.cv2(y[-1]))
-        y.append(self.cv3(y[-1]))
-        return self.cv4(torch.cat(y, 1))
+        y1, y2 = self.cv1(x).chunk(2, 1)
+        y3 = self.cv2(y2)
+        y4 = self.cv3(y3)
+        return self.cv4(torch.cat((y1, y2, y3, y4), 1))
 
     def forward_split(self, x):
-        y = list(self.cv1(x).split((self.c, self.c), 1))
-        y.append(self.cv2(y[-1]))
-        y.append(self.cv3(y[-1]))
-        return self.cv4(torch.cat(y, 1))
+        y1, y2 = self.cv1(x).split((self.c, self.c), 1)
+        y3 = self.cv2(y2)
+        y4 = self.cv3(y3)
+        return self.cv4(torch.cat((y1, y2, y3, y4), 1))
         
         
 class RepNCSPELAN4(nn.Module):
@@ -613,16 +613,16 @@ class RepNCSPELAN4(nn.Module):
         self.cv4 = Conv(c3+(2*c4), c2, 1, 1)
 
     def forward(self, x):
-        y = list(self.cv1(x).chunk(2, 1))
-        y.append(self.cv2(y[-1]))
-        y.append(self.cv3(y[-1]))
-        return self.cv4(torch.cat(y, 1))
+        y1, y2 = self.cv1(x).chunk(2, 1)
+        y3 = self.cv2(y2)
+        y4 = self.cv3(y3)
+        return self.cv4(torch.cat((y1, y2, y3, y4), 1))
 
     def forward_split(self, x):
-        y = list(self.cv1(x).split((self.c, self.c), 1))
-        y.append(self.cv2(y[-1]))
-        y.append(self.cv3(y[-1]))
-        return self.cv4(torch.cat(y, 1))
+        y1, y2 = self.cv1(x).split((self.c, self.c), 1)
+        y3 = self.cv2(y2)
+        y4 = self.cv3(y3)
+        return self.cv4(torch.cat((y1, y2, y3, y4), 1))
 
 #################
 
