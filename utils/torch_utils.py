@@ -423,10 +423,13 @@ def smart_optimizer(model, name='Adam', lr=0.001, momentum=0.9, decay=1e-5):
                 for iv in v.ia7:
                     g[1].append(iv.implicit)
 
+    use_fused = check_version(torch.__version__, '2.0.0') and len(g[2]) > 0 and g[2][0].device.type == 'cuda'
+    fused_arg = {'fused': True} if use_fused else {}
+
     if name == 'Adam':
-        optimizer = torch.optim.Adam(g[2], lr=lr, betas=(momentum, 0.999))  # adjust beta1 to momentum
+        optimizer = torch.optim.Adam(g[2], lr=lr, betas=(momentum, 0.999), **fused_arg)  # adjust beta1 to momentum
     elif name == 'AdamW':
-        optimizer = torch.optim.AdamW(g[2], lr=lr, betas=(momentum, 0.999), weight_decay=0.0, amsgrad=True)
+        optimizer = torch.optim.AdamW(g[2], lr=lr, betas=(momentum, 0.999), weight_decay=0.0, amsgrad=True, **fused_arg)
     elif name == 'RMSProp':
         optimizer = torch.optim.RMSprop(g[2], lr=lr, momentum=momentum)
     elif name == 'SGD':
