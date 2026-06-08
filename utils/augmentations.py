@@ -23,8 +23,15 @@ class Albumentations:
             import albumentations as A
             check_version(A.__version__, '1.0.3', hard=True)  # version requirement
 
+            try:
+                # Albumentations >= 1.4.0
+                res_crop = A.RandomResizedCrop(size=(size, size), scale=(0.8, 1.0), ratio=(0.9, 1.11), p=0.0)
+            except Exception:
+                # Albumentations < 1.4.0
+                res_crop = A.RandomResizedCrop(height=size, width=size, scale=(0.8, 1.0), ratio=(0.9, 1.11), p=0.0)
+
             T = [
-                A.RandomResizedCrop(height=size, width=size, scale=(0.8, 1.0), ratio=(0.9, 1.11), p=0.0),
+                res_crop,
                 A.Blur(p=0.01),
                 A.MedianBlur(p=0.01),
                 A.ToGray(p=0.01),
@@ -318,7 +325,12 @@ def classify_albumentations(
         from albumentations.pytorch import ToTensorV2
         check_version(A.__version__, '1.0.3', hard=True)  # version requirement
         if augment:  # Resize and crop
-            T = [A.RandomResizedCrop(height=size, width=size, scale=scale, ratio=ratio)]
+            try:
+                # Albumentations >= 1.4.0
+                res_crop = A.RandomResizedCrop(size=(size, size), scale=scale, ratio=ratio)
+            except Exception:
+                res_crop = A.RandomResizedCrop(height=size, width=size, scale=scale, ratio=ratio)
+            T = [res_crop]
             if auto_aug:
                 # TODO: implement AugMix, AutoAug & RandAug in albumentation
                 LOGGER.info(f'{prefix}auto augmentations are currently not supported')
@@ -331,7 +343,12 @@ def classify_albumentations(
                     color_jitter = (float(jitter),) * 3  # repeat value for brightness, contrast, satuaration, 0 hue
                     T += [A.ColorJitter(*color_jitter, 0)]
         else:  # Use fixed crop for eval set (reproducibility)
-            T = [A.SmallestMaxSize(max_size=size), A.CenterCrop(height=size, width=size)]
+            try:
+                # Albumentations >= 1.4.0
+                center_crop = A.CenterCrop(size=(size, size))
+            except Exception:
+                center_crop = A.CenterCrop(height=size, width=size)
+            T = [A.SmallestMaxSize(max_size=size), center_crop]
         T += [A.Normalize(mean=mean, std=std), ToTensorV2()]  # Normalize and convert to Tensor
         LOGGER.info(prefix + ', '.join(f'{x}'.replace('always_apply=False, ', '') for x in T if x.p))
         return A.Compose(T)
