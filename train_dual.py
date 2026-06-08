@@ -10,6 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import torch._dynamo
 import torch.distributed as dist
 import torch.nn as nn
 import yaml
@@ -252,7 +253,6 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
         for m in model.modules():
             if hasattr(m, 'inplace'):
                 m.inplace = False
-        import torch._dynamo
         torch._dynamo.config.cache_size_limit = 64
         model = torch.compile(model)
 
