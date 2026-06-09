@@ -21,24 +21,17 @@ class Albumentations:
         prefix = colorstr('albumentations: ')
         try:
             import albumentations as A
-            check_version(A.__version__, '1.0.3', hard=True)  # version requirement
-
-            try:
-                # Albumentations >= 1.4.0
-                res_crop = A.RandomResizedCrop(size=(size, size), scale=(0.8, 1.0), ratio=(0.9, 1.11), p=0.0)
-            except Exception:
-                # Albumentations < 1.4.0
-                res_crop = A.RandomResizedCrop(height=size, width=size, scale=(0.8, 1.0), ratio=(0.9, 1.11), p=0.0)
+            check_version(A.__version__, '2.0.0', hard=True)  # version requirement
 
             T = [
-                res_crop,
+                A.RandomResizedCrop(size=(size, size), scale=(0.8, 1.0), ratio=(0.9, 1.11), p=0.0),
                 A.Blur(p=0.01),
                 A.MedianBlur(p=0.01),
                 A.ToGray(p=0.01),
                 A.CLAHE(p=0.01),
                 A.RandomBrightnessContrast(p=0.0),
                 A.RandomGamma(p=0.0),
-                A.ImageCompression(quality_lower=75, p=0.0)]  # transforms
+                A.ImageCompression(quality_range=(75, 100), p=0.0)]  # transforms
             self.transform = A.Compose(T, bbox_params=A.BboxParams(format='yolo', label_fields=['class_labels']))
 
             LOGGER.info(prefix + ', '.join(f'{x}'.replace('always_apply=False, ', '') for x in T if x.p))
@@ -323,14 +316,9 @@ def classify_albumentations(
     try:
         import albumentations as A
         from albumentations.pytorch import ToTensorV2
-        check_version(A.__version__, '1.0.3', hard=True)  # version requirement
+        check_version(A.__version__, '2.0.0', hard=True)  # version requirement
         if augment:  # Resize and crop
-            try:
-                # Albumentations >= 1.4.0
-                res_crop = A.RandomResizedCrop(size=(size, size), scale=scale, ratio=ratio)
-            except Exception:
-                res_crop = A.RandomResizedCrop(height=size, width=size, scale=scale, ratio=ratio)
-            T = [res_crop]
+            T = [A.RandomResizedCrop(size=(size, size), scale=scale, ratio=ratio)]
             if auto_aug:
                 # TODO: implement AugMix, AutoAug & RandAug in albumentation
                 LOGGER.info(f'{prefix}auto augmentations are currently not supported')
@@ -343,12 +331,7 @@ def classify_albumentations(
                     color_jitter = (float(jitter),) * 3  # repeat value for brightness, contrast, satuaration, 0 hue
                     T += [A.ColorJitter(*color_jitter, 0)]
         else:  # Use fixed crop for eval set (reproducibility)
-            try:
-                # Albumentations >= 1.4.0
-                center_crop = A.CenterCrop(size=(size, size))
-            except Exception:
-                center_crop = A.CenterCrop(height=size, width=size)
-            T = [A.SmallestMaxSize(max_size=size), center_crop]
+            T = [A.SmallestMaxSize(max_size=size), A.CenterCrop(size=(size, size))]
         T += [A.Normalize(mean=mean, std=std), ToTensorV2()]  # Normalize and convert to Tensor
         LOGGER.info(prefix + ', '.join(f'{x}'.replace('always_apply=False, ', '') for x in T if x.p))
         return A.Compose(T)
