@@ -28,9 +28,9 @@ thop
 pillow>=7.1.2
 
 # Optional logging
-wandb
-clearml
-comet-ml
+# wandb
+# clearml
+# comet-ml
 
 # Training utilities
 tensorboard
