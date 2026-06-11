@@ -1,0 +1,12 @@
+path: /path/to/parking-dataset  # dataset root dir
+train: train.txt  # train images (relative to 'path')
+val: val.txt      # val images (relative to 'path')
+
+# Classes
+names:
+  0: plate
+  1: bike
+  2: car
+  3: truck
+  4: bus
+  5: bajai

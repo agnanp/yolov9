@@ -6,14 +6,14 @@ warmup_epochs: 3.0
 warmup_momentum: 0.8
 warmup_bias_lr: 0.1
 box: 7.5
-cls: 0.5
-cls_pw: 1.0
+cls: 0.7        # increased to penalize car/truck confusion harder
+cls_pw: 1.5     # positive weight upsampling — helps rare classes (truck, bus)
 obj: 0.7
 obj_pw: 1.0
 dfl: 1.5
 iou_t: 0.20
 anchor_t: 5.0
-fl_gamma: 0.0
+fl_gamma: 0.5   # focal loss — focuses gradient on hard/ambiguous examples (pickups)
 hsv_h: 0.015
 hsv_s: 0.7
 hsv_v: 0.4
@@ -25,5 +25,5 @@ perspective: 0.0005 # added perspective warping
 flipud: 0.0
 fliplr: 0.5
 mosaic: 1.0       # keep enabled for crowded gates
-mixup: 0.0        # disabled for rigid vehicles
-copy_paste: 0.0   # disabled
+mixup: 0.1        # mild mixup — blends car/truck to force feature separation
+copy_paste: 0.1   # paste objects across images for more variety
